@@ -14,13 +14,20 @@ interface SigInCredentials {
   password: string;
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url: string;
+}
+
 interface AuthState {
   token: string;
-  user: object;
+  user: User;
 }
 
 interface AuthContextData {
-  user: object;
+  user: User;
   signIn(credentials: SigInCredentials): Promise<void>;
   signOut(): void;
   loading: boolean;
