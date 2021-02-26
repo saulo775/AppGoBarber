@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { Platform } from 'react-native';
+import { format } from 'date-fns';
 import {
   Container,
   Header,
@@ -90,13 +91,36 @@ const CreateAppointment: React.FC = () => {
       if (Platform.OS === 'android') {
         setShowDatePicker(false);
       }
-
       if (date) {
         setSelectedDate(date);
       }
     },
     [],
   );
+
+  const morningAvailability = useMemo(() => {
+    return availability
+      .filter(({ hour }) => hour < 12)
+      .map(({ hour, available }) => {
+        return {
+          hour,
+          available,
+          hourFormatted: format(new Date().setHours(hour), 'HH:00'),
+        };
+      });
+  }, [availability]);
+
+  const afternoomAvailability = useMemo(() => {
+    return availability
+      .filter(({ hour }) => hour >= 12)
+      .map(({ hour, available }) => {
+        return {
+          hour,
+          available,
+          hourFormatted: format(new Date().setHours(hour), 'HH:00'),
+        };
+      });
+  }, [availability]);
 
   return (
     <Container>
@@ -118,9 +142,7 @@ const CreateAppointment: React.FC = () => {
           keyExtractor={provider => provider.id}
           renderItem={({ item: provider }) => (
             <ProviderContainer
-              onPress={() => {
-                handleSelectProvider(provider.id);
-              }}
+              onPress={() => handleSelectProvider(provider.id)}
               selected={provider.id === selectedProvider}
             >
               <ProviderAvatar source={{ uri: provider.avatar_url }} />
@@ -151,6 +173,14 @@ const CreateAppointment: React.FC = () => {
           />
         )}
       </Calendar>
+
+      {morningAvailability.map(({ hourFormatted }) => (
+        <Title key={hourFormatted}>{hourFormatted}</Title>
+      ))}
+
+      {afternoomAvailability.map(({ hourFormatted }) => (
+        <Title key={hourFormatted}>{hourFormatted}</Title>
+      ))}
     </Container>
   );
 };
